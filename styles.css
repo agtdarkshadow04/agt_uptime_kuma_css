@@ -1,0 +1,232 @@
+/* ORBITAL / Uptime Kuma status-page theme
+ * Paste this entire file into Edit Status Page > Custom CSS, then Save.
+ * Plain CSS: no external fonts, scripts, or images required.
+ * Selectors checked against upstream StatusPage and PublicGroupList.
+ * Includes classic DOM heartbeat bars and current canvas color variables.
+ * Not tested against your running instance; custom markup may need adjustments.
+ *
+ * Palette: background #000000; text #FFB451; borders/icons #FF0500;
+ * buttons and highlighting/scrollbars #E25530 (same value as requested).
+ * Status legend: up = orange; down = crimson; pending = red-orange;
+ * maintenance = translucent orange; empty history = faint orange.
+ * Hover a heartbeat for its actual status; existing labels remain intact.
+ */
+
+:root {
+    color-scheme: dark;
+    --sf-bg: #000000;
+    --sf-text: #FFB451;
+    --sf-crimson: #FF0500;
+    --sf-button: #E25530;
+    --sf-accent: #E25530;
+    --sf-muted: rgba(255, 180, 81, 0.76);
+    --sf-line: rgba(255, 5, 0, 0.32);
+    --sf-maintenance: rgba(255, 180, 81, 0.55);
+
+    /* Canvas heartbeat implementations read these from the root element. */
+    --bs-primary: #FFB451 !important;
+    --bs-primary-rgb: 255, 180, 81 !important;
+    --bs-success: #FFB451 !important;
+    --bs-success-rgb: 255, 180, 81 !important;
+    --bs-danger: #FF0500 !important;
+    --bs-danger-rgb: 255, 5, 0 !important;
+    --bs-warning: #E25530 !important;
+    --bs-warning-rgb: 226, 85, 48 !important;
+    --maintenance: rgba(255, 180, 81, 0.55) !important;
+    --bs-body-bg: #000000;
+    --bs-body-color: #FFB451;
+    scrollbar-color: var(--sf-accent) var(--sf-bg);
+    scrollbar-width: thin;
+}
+
+html,
+body,
+body.dark,
+#app {
+    background-color: var(--sf-bg) !important;
+    color: var(--sf-text) !important;
+    font-family: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace !important;
+}
+
+/* Static grid behind the content: no overlay to intercept clicks. */
+#app {
+    min-height: 100vh;
+    background-image:
+        linear-gradient(rgba(255, 5, 0, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 5, 0, 0.045) 1px, transparent 1px);
+    background-size: 48px 48px;
+}
+
+::selection {
+    background: var(--sf-accent);
+    color: var(--sf-bg);
+    text-shadow: none;
+}
+
+* {
+    scrollbar-color: var(--sf-accent) var(--sf-bg);
+    scrollbar-width: thin;
+}
+
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: var(--sf-bg); }
+::-webkit-scrollbar-thumb {
+    background: var(--sf-accent);
+    border: 2px solid var(--sf-bg);
+    border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--sf-text); }
+
+.main { color: var(--sf-text) !important; padding-block: 1rem; }
+
+.main h1 {
+    color: var(--sf-text) !important;
+    font-weight: 800;
+    font-size: clamp(1.65rem, 4vw, 2.5rem);
+    letter-spacing: 0.075em;
+    text-transform: uppercase;
+    text-shadow: 0 0 20px rgba(255, 180, 81, 0.23);
+    padding-bottom: 1.25rem;
+    border-bottom: 2px solid var(--sf-crimson);
+    overflow-wrap: anywhere;
+}
+
+.main :is(h2, h3, h4) { color: var(--sf-text) !important; }
+.main .group-title {
+    font-size: 1.15rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-inline-start: 4px solid var(--sf-crimson);
+    padding-inline-start: 0.8rem;
+}
+
+.main a:not(.btn) {
+    color: var(--sf-text) !important;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--sf-accent);
+}
+.main a:not(.btn):hover {
+    color: var(--sf-accent) !important;
+    text-decoration: underline;
+}
+
+/* Angular instrument panels; no clipping of popovers or long text. */
+.main .shadow-box {
+    background: var(--sf-bg) !important;
+    color: var(--sf-text) !important;
+    border: 1px solid var(--sf-crimson) !important;
+    border-radius: 3px 16px 3px 3px !important;
+    box-shadow: inset 3px 0 0 var(--sf-crimson), 0 0 22px rgba(255, 5, 0, 0.10) !important;
+}
+.main .overall-status {
+    background-image: linear-gradient(110deg, rgba(255, 5, 0, 0.13), transparent 65%) !important;
+    font-size: clamp(1.1rem, 2.6vw, 1.5rem);
+    letter-spacing: 0.025em;
+}
+.main .monitor-list .item {
+    color: var(--sf-text) !important;
+    border-bottom: 1px solid var(--sf-line);
+    transition: background-color 160ms ease;
+}
+.main .monitor-list .item:last-child { border-bottom: 0; }
+.main .monitor-list .item:hover,
+.main .monitor-list .item:focus-within {
+    background-color: rgba(226, 85, 48, 0.10) !important;
+}
+.main .item-name { color: var(--sf-text) !important; overflow-wrap: anywhere; }
+.main :is(.text-muted, .word, .extra-info, .date, .refresh-info) {
+    color: var(--sf-muted) !important;
+}
+.main .connecting-line { background-color: var(--sf-line) !important; }
+
+/* Decorative icons use crimson; status icons retain distinct meanings. */
+.main .svg-inline--fa { color: var(--sf-crimson); }
+.main .overall-status .ok { color: var(--sf-text) !important; }
+.main .overall-status .warning { color: var(--sf-accent) !important; }
+.main .overall-status .danger { color: var(--sf-crimson) !important; }
+.main .overall-status .status-maintenance { color: var(--sf-maintenance) !important; }
+.main .chevron { color: var(--sf-crimson) !important; }
+
+/* Heartbeats: keep original dimensions, layout, and hover targets. */
+.main .hp-bar-big { --beat-empty-color: rgba(255, 180, 81, 0.16) !important; }
+.main .hp-bar-big .beat { background-color: var(--sf-text) !important; border-radius: 2px; }
+.main .hp-bar-big .beat.down { background-color: var(--sf-crimson) !important; }
+.main .hp-bar-big .beat.pending { background-color: var(--sf-accent) !important; }
+.main .hp-bar-big .beat.maintenance { background-color: var(--sf-maintenance) !important; }
+.main .hp-bar-big .beat.empty { background-color: rgba(255, 180, 81, 0.16) !important; }
+.main .badge { border-radius: 3px; font-variant-numeric: tabular-nums; }
+.main .badge.bg-primary,
+.main .badge.bg-success { background-color: var(--sf-text) !important; color: var(--sf-bg) !important; }
+.main .badge.bg-danger { background-color: var(--sf-crimson) !important; color: var(--sf-bg) !important; }
+.main .badge.bg-warning { background-color: var(--sf-accent) !important; color: var(--sf-bg) !important; }
+.main .badge.bg-maintenance { background-color: var(--sf-maintenance) !important; color: var(--sf-bg) !important; }
+.main .bg-maintenance:not(.badge) { border-style: dashed !important; }
+
+/* Black button text provides better contrast on the specified red-orange. */
+.main .btn,
+.sidebar .btn {
+    background: var(--sf-button) !important;
+    color: var(--sf-bg) !important;
+    border: 1px solid var(--sf-button) !important;
+    border-radius: 2px 10px 2px 2px !important;
+    font-family: inherit;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    box-shadow: none;
+    transition: box-shadow 160ms ease, border-color 160ms ease;
+}
+.main .btn .svg-inline--fa,
+.sidebar .btn .svg-inline--fa { color: inherit !important; }
+.main .btn:hover,
+.sidebar .btn:hover {
+    border-color: var(--sf-text) !important;
+    box-shadow: 0 0 16px rgba(226, 85, 48, 0.35);
+}
+.main .btn:disabled,
+.sidebar .btn:disabled { opacity: 0.5; box-shadow: none; }
+:is(a, button, input, select, textarea, [tabindex], [contenteditable="true"]):focus-visible {
+    outline: 2px solid var(--sf-text) !important;
+    outline-offset: 3px;
+}
+
+/* Editor surfaces stay legible while adjusting the status page. */
+.sidebar,
+.sidebar .sidebar-footer {
+    color: var(--sf-text) !important;
+    background: var(--sf-bg) !important;
+    border-color: var(--sf-crimson) !important;
+}
+:is(.main, .sidebar) :is(.form-control, .form-select, .input-group-text, .list-group-item) {
+    background-color: var(--sf-bg) !important;
+    color: var(--sf-text) !important;
+    border-color: var(--sf-accent) !important;
+    caret-color: var(--sf-text);
+}
+:is(.main, .sidebar) .form-control::placeholder { color: var(--sf-muted); opacity: 1; }
+.sidebar .form-text { color: var(--sf-muted) !important; }
+.sidebar .form-check-input:checked {
+    background-color: var(--sf-accent) !important;
+    border-color: var(--sf-accent) !important;
+}
+
+.main footer {
+    color: var(--sf-muted) !important;
+    border-top: 1px solid var(--sf-crimson);
+    padding-top: 1.5rem;
+    font-size: 0.85rem;
+}
+.main hr { border-color: var(--sf-crimson); opacity: 0.6; }
+
+@media (max-width: 575.98px) {
+    .main h1 { letter-spacing: 0.035em; }
+    .main .group-title { font-size: 1rem; }
+    .main .overall-status { padding: 1rem !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .main, .main *, .sidebar * {
+        transition: none !important;
+        animation: none !important;
+        scroll-behavior: auto !important;
+    }
+}
